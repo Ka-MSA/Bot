@@ -35,21 +35,13 @@ def build_files_by_section():
         for file in files:
             file_id = file['id']
             file_name = file['name']
-            # Use export for Google Slides, fallback to direct link otherwise
-            if file_name.endswith('.pptx') or file_name.endswith('.pdf'):
-                url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            else:
-                url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            url = f"https://drive.google.com/uc?export=download&id={file_id}"
             files_dict[file_name] = url
 
-        files_by_section[section_name] = files_dict
+        # Sort files within the section
+        files_by_section[section_name] = dict(sorted(files_dict.items()))
 
     return files_by_section
-    # Sort file names inside each section
-files_by_section = {
-    section: dict(sorted(files.items()))
-    for section, files in files_by_section.items()
-}
 
-# Exported dictionary
+# Final dictionary, ready to be used in your bot
 files_by_section = build_files_by_section()
