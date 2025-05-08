@@ -10,7 +10,6 @@ creds = service_account.Credentials.from_service_account_info(creds_dict)
 # Initialize Drive API
 drive_service = build('drive', 'v3', credentials=creds)
 
-# Replace this with your main folder ID
 MAIN_FOLDER_ID = '1-5ocbVU17S13rUgbaxi5kEWOXjAJWTsf'
 
 def get_subfolders(folder_id):
@@ -25,7 +24,7 @@ def get_files_in_folder(folder_id):
 
 def build_files_by_section():
     files_by_section = {}
-    subfolders = get_subfolders(MAIN_FOLDER_ID)
+    subfolders = sorted(get_subfolders(MAIN_FOLDER_ID), key=lambda x: x['name'].lower())  # Sort sections
 
     for folder in subfolders:
         section_name = folder['name']
@@ -35,13 +34,12 @@ def build_files_by_section():
         for file in files:
             file_id = file['id']
             file_name = file['name']
-            url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            files_dict[file_name] = url
+            download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            files_dict[file_name] = download_url
 
-        # Sort files within the section
-        files_by_section[section_name] = dict(sorted(files_dict.items()))
+        sorted_files_dict = dict(sorted(files_dict.items()))  # Sort files in section
+        files_by_section[section_name] = sorted_files_dict
 
     return files_by_section
 
-# Final dictionary, ready to be used in your bot
 files_by_section = build_files_by_section()
