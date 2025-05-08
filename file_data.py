@@ -11,7 +11,7 @@ creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build('drive', 'v3', credentials=creds)
 
 # Replace this with your main folder ID
-MAIN_FOLDER_ID = '1cpPjG7_pQUi_je-bnyNXFSTUyuAr0ywB'
+MAIN_FOLDER_ID = '1-5ocbVU17S13rUgbaxi5kEWOXjAJWTsf'
 
 def get_subfolders(folder_id):
     query = f"'{folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed = false"
