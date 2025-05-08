@@ -1,5 +1,7 @@
 import os
 import json
+import io
+import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -44,11 +46,21 @@ def build_files_by_section():
             file_id = file['id']
             file_name = file['name']
             download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-            files_dict[file_name] = download_url
+            files_dict[file_name] = {
+                'id': file_id,
+                'name': file_name,
+                'url': download_url
+            }
 
-        files_by_section[section_name] = files_dict
+        files_by_section[section_name] = dict(sorted(files_dict.items()))
 
-    return files_by_section
+    return dict(sorted(files_by_section.items()))
 
 # Exported dictionary
 files_by_section = build_files_by_section()
+
+def download_file(file_id):
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    response = requests.get(url)
+    response.raise_for_status()
+    return io.BytesIO(response.content)
