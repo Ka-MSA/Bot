@@ -45,6 +45,11 @@ def build_files_by_section():
         files_by_section[section_name] = files_dict
 
     return files_by_section
+    # Sort file names inside each section
+files_by_section = {
+    section: dict(sorted(files.items()))
+    for section, files in files_by_section.items()
+}
 
 # Exported dictionary
 files_by_section = build_files_by_section()
