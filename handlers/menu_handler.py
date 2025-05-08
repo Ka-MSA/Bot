@@ -1,6 +1,7 @@
 from file_data import files_by_section
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
 def register_menu_handler(bot):
     @bot.message_handler(commands=['menu'])
     def show_menu(message):
