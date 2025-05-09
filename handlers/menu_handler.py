@@ -50,20 +50,23 @@ def register_menu_handler(bot):
         # Loop through sections to find the file
         for section, files in files_by_section.items():
             if filename in files:
-                file_path = files[filename]  # Assuming this stores the file path or link
+                file_data = files[filename]
                 
-                # Check if the file path is a valid file or a link
-                if file_path.startswith("http"):  # Check if it's a URL
-                    # Send the file via the URL (e.g., Google Drive link)
-                    bot.send_document(call.message.chat.id, file_path, caption=f"Here’s your file: {filename}")
+                # If file_data is a dict (like from Google Drive), extract the URL
+                if isinstance(file_data, dict) and "url" in file_data:
+                    file_url = file_data["url"]
+                    bot.send_document(call.message.chat.id, file_url, caption=f"Here’s your file: {filename}")
+                elif isinstance(file_data, str):
+                    if file_data.startswith("http"):
+                        bot.send_document(call.message.chat.id, file_data, caption=f"Here’s your file: {filename}")
+                    else:
+                        try:
+                            with open(file_data, 'rb') as file:
+                                bot.send_document(call.message.chat.id, file, caption=f"Here’s your file: {filename}")
+                        except FileNotFoundError:
+                            bot.send_message(call.message.chat.id, "Sorry, the file could not be found.")
                 else:
-                    # Send the file from a local path
-                    try:
-                        with open(file_path, 'rb') as file:
-                            bot.send_document(call.message.chat.id, file, caption=f"Here’s your file: {filename}")
-                    except FileNotFoundError:
-                        bot.send_message(call.message.chat.id, "Sorry, the file could not be found.")
+                    bot.send_message(call.message.chat.id, "Invalid file entry format.")
                 return
 
-        # If the file is not found in any section
         bot.send_message(call.message.chat.id, "File not found.")
