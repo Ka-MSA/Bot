@@ -1,3 +1,5 @@
+import requests
+import os
 from file_data import files_by_section
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -46,23 +48,40 @@ def register_menu_handler(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("get|"))
     def send_file(call):
         filename = call.data.split("|", 1)[1]
-        
-        # Loop through sections to find the file
+
         for section, files in files_by_section.items():
             if filename in files:
                 file_data = files[filename]
-                
-                # If file_data is a dict (like from Google Drive), extract the URL
-                if isinstance(file_data, dict) and "url" in file_data:
-                    file_url = file_data["url"]
-                    bot.send_document(call.message.chat.id, file_url, caption=f"Here’s your file: {filename}")
+
+                # If it's a Google Drive file (dict with ID)
+                if isinstance(file_data, dict) and "id" in file_data:
+                    try:
+                        file_id = file_data["id"]
+                        download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                        response = requests.get(download_url)
+
+                        if response.status_code == 200:
+                            temp_file_path = f"/tmp/{filename}"
+                            with open(temp_file_path, 'wb') as f:
+                                f.write(response.content)
+
+                            with open(temp_file_path, 'rb') as f:
+                                bot.send_document(call.message.chat.id, f, caption=f"Here’s your file: {filename}")
+
+                            os.remove(temp_file_path)
+                        else:
+                            bot.send_message(call.message.chat.id, "Failed to download file from Google Drive.")
+                    except Exception as e:
+                        bot.send_message(call.message.chat.id, f"Error: {str(e)}")
+
+                # Local file path
                 elif isinstance(file_data, str):
                     if file_data.startswith("http"):
-                        bot.send_document(call.message.chat.id, file_data, caption=f"Here’s your file: {filename}")
+                        bot.send_message(call.message.chat.id, "Direct links are not supported yet. Please upload via Google Drive.")
                     else:
                         try:
-                            with open(file_data, 'rb') as file:
-                                bot.send_document(call.message.chat.id, file, caption=f"Here’s your file: {filename}")
+                            with open(file_data, 'rb') as f:
+                                bot.send_document(call.message.chat.id, f, caption=f"Here’s your file: {filename}")
                         except FileNotFoundError:
                             bot.send_message(call.message.chat.id, "Sorry, the file could not be found.")
                 else:
