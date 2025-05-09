@@ -57,20 +57,7 @@ def register_menu_handler(bot):
                 if isinstance(file_data, dict) and "id" in file_data:
                     try:
                         file_id = file_data["id"]
-                        download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-                        response = requests.get(download_url)
-
-                        if response.status_code == 200:
-                            temp_file_path = f"/tmp/{filename}"
-                            with open(temp_file_path, 'wb') as f:
-                                f.write(response.content)
-
-                            with open(temp_file_path, 'rb') as f:
-                                bot.send_document(call.message.chat.id, f, caption=f"Here’s your file: {filename}")
-
-                            os.remove(temp_file_path)
-                        else:
-                            bot.send_message(call.message.chat.id, "Failed to download file from Google Drive.")
+                        
                     except Exception as e:
                         bot.send_message(call.message.chat.id, f"Error: {str(e)}")
 
